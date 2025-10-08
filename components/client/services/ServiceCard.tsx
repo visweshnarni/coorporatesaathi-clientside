@@ -4,6 +4,7 @@ import { ClockIcon } from '../../icons/Icons';
 
 interface Props {
   service: EnrolledService;
+  onViewDetails: () => void;
 }
 
 const statusStyles: Record<EnrolledService['status'], { bg: string; text: string; border: string }> = {
@@ -13,7 +14,7 @@ const statusStyles: Record<EnrolledService['status'], { bg: string; text: string
   'On Hold': { bg: 'bg-gray-100 dark:bg-gray-900/50', text: 'text-gray-800 dark:text-gray-300', border: 'border-gray-500' },
 };
 
-const ServiceCard: React.FC<Props> = ({ service }) => {
+const ServiceCard: React.FC<Props> = ({ service, onViewDetails }) => {
   const { bg, text, border } = statusStyles[service.status];
   const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 
@@ -62,7 +63,7 @@ const ServiceCard: React.FC<Props> = ({ service }) => {
                 <span className="text-sm font-semibold text-text-primary dark:text-gray-200">{service.consultant.name}</span>
             </div>
         </div>
-        <button className="px-3 py-1 text-sm font-semibold bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-primary rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition">
+        <button onClick={onViewDetails} className="px-3 py-1 text-sm font-semibold bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-primary rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition">
             Details
         </button>
       </div>

@@ -4,6 +4,7 @@ import { mockEnrolledServices } from './data';
 import ServiceCard from './ServiceCard';
 import { ViewType } from '../../../App';
 import { ServiceIcon, PlusIcon } from '../../icons/Icons';
+import ServiceDetailView from './ServiceDetailView';
 
 interface Props {
   searchQuery: string;
@@ -13,6 +14,7 @@ interface Props {
 const EnrolledServiceView: React.FC<Props> = ({ searchQuery, setCurrentView }) => {
     const [services] = useState<EnrolledService[]>(mockEnrolledServices);
     const [statusFilter, setStatusFilter] = useState<ServiceStatus | 'All'>('All');
+    const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
 
     const filteredServices = useMemo(() => {
         // If there are no services at all, don't filter anything yet.
@@ -24,6 +26,11 @@ const EnrolledServiceView: React.FC<Props> = ({ searchQuery, setCurrentView }) =
             return statusMatch && searchMatch;
         });
     }, [services, statusFilter, searchQuery]);
+
+    const selectedService = useMemo(() => {
+        if (!selectedServiceId) return null;
+        return services.find(s => s.id === selectedServiceId);
+    }, [selectedServiceId, services]);
 
     const NoServicesDisplay: React.FC<{ isFilterActive: boolean }> = ({ isFilterActive }) => (
         <div className="md:col-span-2 xl:col-span-3 text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-md">
@@ -45,6 +52,10 @@ const EnrolledServiceView: React.FC<Props> = ({ searchQuery, setCurrentView }) =
             )}
         </div>
     );
+
+    if (selectedService) {
+        return <ServiceDetailView service={selectedService} onBack={() => setSelectedServiceId(null)} />;
+    }
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -78,7 +89,7 @@ const EnrolledServiceView: React.FC<Props> = ({ searchQuery, setCurrentView }) =
                     <NoServicesDisplay isFilterActive={false} />
                 ) : filteredServices.length > 0 ? (
                     filteredServices.map(service => (
-                        <ServiceCard key={service.id} service={service} />
+                        <ServiceCard key={service.id} service={service} onViewDetails={() => setSelectedServiceId(service.id)} />
                     ))
                 ) : (
                     <NoServicesDisplay isFilterActive={true} />
