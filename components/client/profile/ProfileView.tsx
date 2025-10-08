@@ -36,6 +36,10 @@ const ProfileView: React.FC = () => {
                             <input type="email" defaultValue="rishabh@acmecorp.com" className="w-full p-2 border border-gray-300 dark:bg-gray-700 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary" />
                         </div>
                     </div>
+                     <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone Number</label>
+                        <input type="tel" defaultValue="+91 98765 43210" className="w-full p-2 border border-gray-300 dark:bg-gray-700 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary" />
+                    </div>
                      <div className="pt-4 border-t dark:border-gray-700">
                          <h4 className="text-md font-semibold text-text-primary dark:text-gray-200 mb-2 flex items-center gap-2"><LockClosedIcon /> Change Password</h4>
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
