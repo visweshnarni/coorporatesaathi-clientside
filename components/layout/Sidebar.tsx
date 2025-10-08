@@ -22,7 +22,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, isOpen, 
   ];
 
   // FIX: Used a more specific type for the icon prop to allow cloning with className.
-  const NavLink = ({ id, label, icon }: { id: ViewType, label: string, icon: React.ReactElement<IconProps> }) => (
+  const NavLink: React.FC<{ id: ViewType, label: string, icon: React.ReactElement<IconProps> }> = ({ id, label, icon }) => (
     <li>
       <a
         href="#"
@@ -61,7 +61,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, isOpen, 
         </div>
         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
           <ul className="space-y-2">
-            {menuItems.map(item => <NavLink key={item.id} id={item.id as ViewType} label={item.label} icon={item.icon} />)}
+            {/* FIX: Cast item.icon to the expected type to resolve the type mismatch. The 'key' prop error was a misleading consequence of this primary type issue. */}
+            {menuItems.map(item => <NavLink key={item.id} id={item.id as ViewType} label={item.label} icon={item.icon as React.ReactElement<IconProps>} />)}
           </ul>
         </nav>
         <div className="p-4 border-t border-gray-700">

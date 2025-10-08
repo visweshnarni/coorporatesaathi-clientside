@@ -32,9 +32,10 @@ interface HeaderProps {
   setSearchQuery: (query: string) => void;
   theme: Theme;
   setTheme: (theme: Theme) => void;
+  onLogout: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, onMenuClick, searchQuery, setSearchQuery, theme, setTheme }) => {
+const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, onMenuClick, searchQuery, setSearchQuery, theme, setTheme, onLogout }) => {
   const pageTitle = viewTitles[currentView] || 'Dashboard';
   const [notifications, setNotifications] = useState<ClientNotification[]>(mockClientNotifications);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -133,7 +134,7 @@ const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView, onMenuClic
                      </a>
                   </div>
                   <div className="mt-2 pt-2 border-t dark:border-gray-700">
-                     <a href="#" onClick={(e) => { e.preventDefault(); alert("Logging out..."); }} className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-500/20">
+                     <a href="#" onClick={(e) => { e.preventDefault(); onLogout(); }} className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-500/20">
                        <LogoutIcon className="w-5 h-5" /> Logout
                      </a>
                   </div>

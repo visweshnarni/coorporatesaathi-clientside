@@ -8,11 +8,13 @@ import DocumentsView from './components/client/documents/DocumentsView';
 import ReportsView from './components/client/reports/ReportsView';
 import ConsultView from './components/client/consult/ConsultView';
 import ProfileView from './components/client/profile/ProfileView';
+import LoginPage from './components/auth/LoginPage';
 
 export type ViewType = 'home' | 'enrolledServices' | 'serviceHub' | 'calendar' | 'documents' | 'reports' | 'consult' | 'profile';
 export type Theme = 'light' | 'dark' | 'system';
 
 const App: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentView, setCurrentView] = useState<ViewType>('home');
   const [searchQuery, setSearchQuery] = useState('');
   const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'system');
@@ -38,6 +40,15 @@ const App: React.FC = () => {
     return () => mediaQuery.removeEventListener('change', handleChange);
 }, [theme]);
 
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setCurrentView('home');
+  };
+
   const renderView = () => {
     switch (currentView) {
       case 'home':
@@ -60,6 +71,10 @@ const App: React.FC = () => {
         return <HomeView setCurrentView={setCurrentView} />;
     }
   };
+  
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
 
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-text-primary dark:text-gray-200">
@@ -70,6 +85,7 @@ const App: React.FC = () => {
         setSearchQuery={setSearchQuery}
         theme={theme}
         setTheme={setTheme}
+        onLogout={handleLogout}
       >
         {renderView()}
       </MainLayout>
