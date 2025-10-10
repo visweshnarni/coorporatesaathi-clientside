@@ -12,9 +12,10 @@ interface MainLayoutProps {
   theme: Theme;
   setTheme: (theme: Theme) => void;
   onLogout: () => void;
+  clientName: string;
 }
 
-const MainLayout: React.FC<MainLayoutProps> = ({ children, currentView, setCurrentView, searchQuery, setSearchQuery, theme, setTheme, onLogout }) => {
+const MainLayout: React.FC<MainLayoutProps> = ({ children, currentView, setCurrentView, searchQuery, setSearchQuery, theme, setTheme, onLogout, clientName }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
@@ -35,6 +36,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, currentView, setCurre
           theme={theme}
           setTheme={setTheme}
           onLogout={onLogout}
+          clientName={clientName}
         />
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-background dark:bg-gray-900 p-4 sm:p-6 lg:p-8">
           {children}

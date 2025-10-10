@@ -69,9 +69,10 @@ const ActivityFeedItem: React.FC<{ activity: RecentActivity }> = ({ activity }) 
 
 interface HomeViewProps {
   setCurrentView: (view: ViewType) => void;
+  clientName: string;
 }
 
-const HomeView: React.FC<HomeViewProps> = ({ setCurrentView }) => {
+const HomeView: React.FC<HomeViewProps> = ({ setCurrentView, clientName }) => {
   const totalServices = mockEnrolledServices.length;
   const pendingActions = mockEnrolledServices.filter(s => s.status === 'Pending Action').length;
   const activeServices = mockEnrolledServices.filter(s => s.status === 'Active' || s.status === 'Pending Action');
@@ -79,7 +80,7 @@ const HomeView: React.FC<HomeViewProps> = ({ setCurrentView }) => {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h2 className="text-2xl lg:text-3xl font-bold text-text-primary dark:text-gray-200">Welcome Back, Rishabh!</h2>
+        <h2 className="text-2xl lg:text-3xl font-bold text-text-primary dark:text-gray-200">Welcome Back, {clientName.split(' ')[0]}!</h2>
         <p className="text-text-secondary dark:text-gray-400 mt-1">Here's a summary of your services and activities.</p>
       </div>
 
