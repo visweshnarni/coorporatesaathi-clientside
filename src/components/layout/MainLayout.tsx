@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import Sidebar from './Sidebar';
-import Header from './Header';
-import { ViewType, Theme } from '../../App';
+import React, { useState } from "react";
+import Sidebar from "./Sidebar";
+import Header from "./Header";
+import { ViewType, Theme } from "../../types.ts";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -15,21 +15,31 @@ interface MainLayoutProps {
   clientName: string;
 }
 
-const MainLayout: React.FC<MainLayoutProps> = ({ children, currentView, setCurrentView, searchQuery, setSearchQuery, theme, setTheme, onLogout, clientName }) => {
+const MainLayout: React.FC<MainLayoutProps> = ({
+  children,
+  currentView,
+  setCurrentView,
+  searchQuery,
+  setSearchQuery,
+  theme,
+  setTheme,
+  onLogout,
+  clientName,
+}) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
     <div className="flex h-screen w-full bg-background dark:bg-gray-900">
-      <Sidebar 
-        currentView={currentView} 
-        setCurrentView={setCurrentView} 
-        isOpen={isSidebarOpen} 
-        setIsOpen={setIsSidebarOpen} 
+      <Sidebar
+        currentView={currentView}
+        setCurrentView={setCurrentView}
+        isOpen={isSidebarOpen}
+        setIsOpen={setIsSidebarOpen}
       />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header 
-          currentView={currentView} 
-          setCurrentView={setCurrentView} 
+        <Header
+          currentView={currentView}
+          setCurrentView={setCurrentView}
           onMenuClick={() => setIsSidebarOpen(true)}
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}

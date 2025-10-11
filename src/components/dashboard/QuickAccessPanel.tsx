@@ -3,7 +3,7 @@
 import React from 'react';
 // FIX: Added missing icon imports.
 import { ProjectIcon, ServiceIcon, PayrollIcon, ReportIcon, ArrowRightIcon } from '../icons/Icons';
-import { ViewType } from '../../App';
+import { ViewType } from "../../types.ts";
 
 interface QuickAccessPanelProps {
   setCurrentView: (view: ViewType) => void;

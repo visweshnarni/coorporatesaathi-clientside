@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { EnrolledService, ServiceStatus } from '../../../types';
+import { EnrolledService, ServiceStatus } from "../../../types.ts";
 import { mockEnrolledServices } from './data';
 import ServiceCard from './ServiceCard';
-import { ViewType } from '../../../App';
+import { ViewType } from "../../../types.ts";
 import { ServiceIcon, PlusIcon } from '../../icons/Icons';
-import ServiceDetailView from './ServiceDetailView';
+import ServiceDetailView from "./serviceDetailView";
 
 interface Props {
   searchQuery: string;

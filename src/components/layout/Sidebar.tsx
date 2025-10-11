@@ -1,5 +1,5 @@
 import React from 'react';
-import { ViewType } from '../../App';
+import { ViewType } from "../../types.ts";
 // FIX: Imported IconProps to resolve typing error with React.cloneElement.
 import { HomeIcon, ServiceIcon, StoreIcon, CalendarIcon, DocumentIcon, ReportIcon, ChatIcon, SettingsIcon, XIcon, IconProps } from '../icons/Icons';
 

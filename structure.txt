@@ -1,0 +1,26 @@
+.
+├── App.tsx
+├── index.html
+├── index.tsx
+├── metadata.json
+├── package-lock.json
+├── package.json
+├── README.md
+├── src
+│   ├── components
+│   │   ├── announcements
+│   │   ├── auth
+│   │   ├── client
+│   │   ├── dashboard
+│   │   ├── icons
+│   │   ├── layout
+│   │   ├── notifications
+│   │   └── settings
+│   ├── services
+│   │   └── api.ts
+│   ├── types.ts
+│   └── vite-env.d.ts
+├── structure.txt
+└── tsconfig.json
+
+12 directories, 12 files

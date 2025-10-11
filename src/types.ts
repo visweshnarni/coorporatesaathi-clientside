@@ -255,3 +255,7 @@ export interface DepartmentInfo {
     managerId: number | null;
     description: string;
 }
+
+// App-level types
+export type ViewType = 'home' | 'enrolledServices' | 'serviceHub' | 'calendar' | 'documents' | 'reports' | 'consult' | 'profile';
+export type Theme = 'light' | 'dark' | 'system';

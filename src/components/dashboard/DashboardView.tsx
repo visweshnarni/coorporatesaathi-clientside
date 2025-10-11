@@ -13,7 +13,7 @@ import QuickAccessPanel from './QuickAccessPanel';
 import AnnouncementsFeed from './AnnouncementsFeed';
 // FIX: Added missing icon imports.
 import { ProjectIcon, ServiceIcon, EmployeeIcon, RevenueIcon } from '../icons/Icons';
-import { Theme, ViewType } from '../../App';
+import { Theme, ViewType } from "../../types.ts";
 
 interface Props {
   effectiveTheme: 'light' | 'dark';

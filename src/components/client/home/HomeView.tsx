@@ -1,9 +1,9 @@
 import React from 'react';
-import { ViewType } from '../../../App';
+import { ViewType } from "../../../types.ts";
 import { mockEnrolledServices } from '../services/data'; // Using single source of truth
 import { mockRecentActivity } from './data';
 import { ServiceIcon, ClockIcon, DocumentIcon, ArrowRightIcon, ChatIcon, PlusIcon, StoreIcon, UploadIcon } from '../../icons/Icons';
-import { EnrolledService, RecentActivity } from '../../../types';
+import { EnrolledService, RecentActivity } from "../../../types.ts";
 
 const KPICard: React.FC<{ title: string; value: string; icon: React.ReactElement }> = ({ title, value, icon }) => (
   <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex items-center justify-between">
