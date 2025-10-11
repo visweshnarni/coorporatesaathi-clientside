@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import MainLayout from './components/layout/MainLayout';
 import HomeView from './components/client/home/HomeView';
@@ -32,92 +31,117 @@ const WelcomeModal: React.FC<{ name: string; onClose: () => void }> = ({ name, o
 );
 
 const App: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
-  const [clientName, setClientName] = useState('Rishabh Patle'); // Default name
-  const [currentView, setCurrentView] = useState<ViewType>('home');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'light');
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+    // 1. Removed hardcoded name
+    const [clientName, setClientName] = useState('');
+    const [currentView, setCurrentView] = useState<ViewType>('home');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'light');
+    
+    // Theme management useEffect (unchanged)
+    useEffect(() => {
+        const root = window.document.documentElement;
+        const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        root.classList.remove(isDark ? 'light' : 'dark');
+        root.classList.add(isDark ? 'dark' : 'light');
+        localStorage.setItem('theme', theme);
 
-  useEffect(() => {
-    const root = window.document.documentElement;
-    const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const handleChange = () => {
+            if (theme === 'system') {
+                const newIsDark = mediaQuery.matches;
+                root.classList.remove(newIsDark ? 'light' : 'dark');
+                root.classList.add(newIsDark ? 'dark' : 'light');
+            }
+        };
+        mediaQuery.addEventListener('change', handleChange);
+        return () => mediaQuery.removeEventListener('change', handleChange);
+    }, [theme]);
 
-    root.classList.remove(isDark ? 'light' : 'dark');
-    root.classList.add(isDark ? 'dark' : 'light');
+    // 2. Check for existing session on initial app load
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const userString = localStorage.getItem('user');
+        
+        if (token && userString) {
+            try {
+                const user = JSON.parse(userString);
+                setClientName(user.name || 'User');
+                setIsAuthenticated(true);
+            } catch (error) {
+                console.error("Failed to parse user data from localStorage", error);
+                // Clear potentially corrupted data
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+            }
+        }
+    }, []); // Empty dependency array ensures this runs only once on mount
 
-    localStorage.setItem('theme', theme);
+    // 3. Updated login handler to get name from localStorage
+    const handleLogin = () => {
+        const userString = localStorage.getItem('user');
+        if (userString) {
+            const user = JSON.parse(userString);
+            setClientName(user.name || 'User');
+        }
+        setIsAuthenticated(true);
+        setShowWelcomeModal(true);
+    };
 
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = () => {
-        if (theme === 'system') {
-           const newIsDark = mediaQuery.matches;
-           root.classList.remove(newIsDark ? 'light' : 'dark');
-           root.classList.add(newIsDark ? 'dark' : 'light');
+    // 4. Updated logout handler to clear session data
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setIsAuthenticated(false);
+        setClientName('');
+        setCurrentView('home');
+    };
+
+    const renderView = () => {
+        switch (currentView) {
+            case 'home':
+                return <HomeView setCurrentView={setCurrentView} clientName={clientName} />;
+            case 'enrolledServices':
+                return <EnrolledServiceView searchQuery={searchQuery} setCurrentView={setCurrentView} />;
+            case 'serviceHub':
+                return <ServiceHubView searchQuery={searchQuery} />;
+            case 'calendar':
+                return <CalendarView />;
+            case 'documents':
+                return <DocumentsView searchQuery={searchQuery} />;
+            case 'reports':
+                return <ReportsView />;
+            case 'consult':
+                return <ConsultView />;
+            case 'profile':
+                return <ProfileView />;
+            default:
+                return <HomeView setCurrentView={setCurrentView} clientName={clientName} />;
         }
     };
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-}, [theme]);
-
-  const handleLogin = (name?: string) => {
-    setIsAuthenticated(true);
-    if (name) {
-        setClientName(name);
+    
+    if (!isAuthenticated) {
+        return <LoginPage onLogin={handleLogin} theme={theme} setTheme={setTheme} />;
     }
-    // Show welcome modal on every login
-    setShowWelcomeModal(true);
-  };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setCurrentView('home');
-  };
-
-  const renderView = () => {
-    switch (currentView) {
-      case 'home':
-        return <HomeView setCurrentView={setCurrentView} clientName={clientName} />;
-      case 'enrolledServices':
-        return <EnrolledServiceView searchQuery={searchQuery} setCurrentView={setCurrentView} />;
-      case 'serviceHub':
-        return <ServiceHubView searchQuery={searchQuery} />;
-      case 'calendar':
-        return <CalendarView />;
-      case 'documents':
-        return <DocumentsView searchQuery={searchQuery} />;
-      case 'reports':
-        return <ReportsView />;
-      case 'consult':
-        return <ConsultView />;
-      case 'profile':
-        return <ProfileView />;
-      default:
-        return <HomeView setCurrentView={setCurrentView} clientName={clientName} />;
-    }
-  };
-  
-  if (!isAuthenticated) {
-    return <LoginPage onLogin={handleLogin} theme={theme} setTheme={setTheme} />;
-  }
-
-  return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-text-primary dark:text-gray-200">
-      <MainLayout 
-        currentView={currentView} 
-        setCurrentView={setCurrentView}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        theme={theme}
-        setTheme={setTheme}
-        onLogout={handleLogout}
-        clientName={clientName}
-      >
-        {renderView()}
-      </MainLayout>
-      {showWelcomeModal && <WelcomeModal name={clientName} onClose={() => setShowWelcomeModal(false)} />}
-    </div>
-  );
+    return (
+        <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-text-primary dark:text-gray-200">
+            <MainLayout 
+                currentView={currentView} 
+                setCurrentView={setCurrentView}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                theme={theme}
+                setTheme={setTheme}
+                onLogout={handleLogout}
+                clientName={clientName}
+            >
+                {renderView()}
+            </MainLayout>
+            {showWelcomeModal && <WelcomeModal name={clientName} onClose={() => setShowWelcomeModal(false)} />}
+        </div>
+    );
 };
 
 export default App;
