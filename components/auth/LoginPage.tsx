@@ -1,14 +1,18 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { MailIcon, LockClosedIcon, UserCircleIcon, PhoneIcon, SunIcon, MoonIcon } from '../icons/Icons';
 import { Theme } from '../../App';
 
+// Define the props for the main LoginPage component
 interface LoginPageProps {
-    onLogin: (name?: string) => void;
+    onLogin: () => void; // Changed: No longer passes name, as it will be retrieved from localStorage
     theme: Theme;
     setTheme: (theme: Theme) => void;
 }
 
+// A helper constant for the API base URL
+const API_BASE_URL = 'http://localhost:3000';
+
+// GoogleIcon component (unchanged)
 const GoogleIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
     <svg className={className} viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
         <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
@@ -18,11 +22,38 @@ const GoogleIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" })
     </svg>
 );
 
+// UPDATED LoginForm Component
+const LoginForm: React.FC<{ onOtpRequired: (email: string) => void }> = ({ onOtpRequired }) => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
-const LoginForm: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        onLogin();
+        setError('');
+        setIsLoading(true);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                sessionStorage.setItem('tempEmail', email);
+                alert('OTP sent! Check console for testing: ' + data.data.otp_for_testing);
+                onOtpRequired(email);
+            } else {
+                setError(data.message || "An unexpected error occurred.");
+            }
+        } catch (err) {
+            setError("Failed to connect to the server. Please try again later.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -30,10 +61,8 @@ const LoginForm: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
             <div>
                 <label htmlFor="login-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email Address</label>
                 <div className="mt-1 relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <MailIcon className="w-5 h-5 text-gray-400" />
-                    </div>
-                    <input type="email" id="login-email" className="w-full pl-10 pr-3 py-3 border border-gray-300 dark:bg-gray-700 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary" placeholder="you@example.com" required />
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><MailIcon className="w-5 h-5 text-gray-400" /></div>
+                    <input type="email" id="login-email" value={email} onChange={e => setEmail(e.target.value)} className="w-full pl-10 pr-3 py-3 border border-gray-300 dark:bg-gray-700 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary" placeholder="you@example.com" required />
                 </div>
             </div>
             <div>
@@ -42,17 +71,19 @@ const LoginForm: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
                     <a href="#" className="text-sm text-primary hover:underline">Forgot password?</a>
                 </div>
                 <div className="mt-1 relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <LockClosedIcon className="w-5 h-5 text-gray-400" />
-                    </div>
-                    <input type="password" id="login-password" className="w-full pl-10 pr-3 py-3 border border-gray-300 dark:bg-gray-700 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary" placeholder="••••••••" required />
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><LockClosedIcon className="w-5 h-5 text-gray-400" /></div>
+                    <input type="password" id="login-password" value={password} onChange={e => setPassword(e.target.value)} className="w-full pl-10 pr-3 py-3 border border-gray-300 dark:bg-gray-700 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary" placeholder="••••••••" required />
                 </div>
             </div>
-            <button type="submit" className="w-full py-3 px-4 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors">Login</button>
+            {error && <p className="text-xs text-red-600 text-center">{error}</p>}
+            <button type="submit" disabled={isLoading} className="w-full py-3 px-4 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed">
+                {isLoading ? 'Sending OTP...' : 'Login'}
+            </button>
         </form>
     );
 };
 
+// UPDATED SignupForm Component
 const SignupForm: React.FC<{ onSignup: (data: { name: string; email: string; phone: string }) => void }> = ({ onSignup }) => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -60,24 +91,47 @@ const SignupForm: React.FC<{ onSignup: (data: { name: string; email: string; pho
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
-  
-    const handleSignup = (e: React.FormEvent) => {
-      e.preventDefault();
-      if (password !== confirmPassword) {
-        setError("Passwords do not match.");
-        return;
-      }
-      const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
-      if (!passwordRegex.test(password)) {
-        setError("Use 8+ characters with an uppercase letter, a number, and a special symbol.");
-        return;
-      }
-      setError('');
-      onSignup({ name, email, phone });
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleSignup = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (password !== confirmPassword) {
+            setError("Passwords do not match.");
+            return;
+        }
+        const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
+        if (!passwordRegex.test(password)) {
+            setError("Use 8+ characters with an uppercase letter, a number, and a special symbol.");
+            return;
+        }
+        setError('');
+        setIsLoading(true);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password, phone })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                sessionStorage.setItem('tempEmail', email);
+                alert('OTP sent! Check console for testing: ' + data.data.otp_for_testing);
+                onSignup({ name, email, phone });
+            } else {
+                setError(data.message || "An unexpected error occurred.");
+            }
+        } catch (err) {
+            setError("Failed to connect to the server. Please try again later.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
         <form onSubmit={handleSignup} className="space-y-4 animate-fade-in">
+             {/* Form inputs are unchanged, only the submit button is updated */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Full Name</label>
                 <div className="mt-1 relative">
@@ -92,7 +146,7 @@ const SignupForm: React.FC<{ onSignup: (data: { name: string; email: string; pho
                     <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full pl-10 pr-3 py-3 border border-gray-300 dark:bg-gray-700 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary" placeholder="you@example.com" required />
                 </div>
             </div>
-             <div>
+            <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number</label>
                 <div className="mt-1 relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><PhoneIcon className="w-5 h-5 text-gray-400" /></div>
@@ -114,15 +168,19 @@ const SignupForm: React.FC<{ onSignup: (data: { name: string; email: string; pho
                 </div>
             </div>
             {error && <p className="text-xs text-red-600 text-center">{error}</p>}
-            <button type="submit" className="w-full py-3 px-4 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors">Next →</button>
+            <button type="submit" disabled={isLoading} className="w-full py-3 px-4 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed">
+                {isLoading ? 'Registering...' : 'Next →'}
+            </button>
         </form>
     );
 };
 
-const OtpForm: React.FC<{ contactInfo: { email: string; phone: string; }; onSubmit: () => void; onBack: () => void; }> = ({ contactInfo, onSubmit, onBack }) => {
+// UPDATED OtpForm Component
+const OtpForm: React.FC<{ contactInfo: { email: string; phone?: string; }; onSubmit: () => void; onBack: () => void; }> = ({ contactInfo, onSubmit, onBack }) => {
     const [otp, setOtp] = useState<string[]>(new Array(6).fill(""));
     const [timer, setTimer] = useState(30);
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
 
     useEffect(() => {
@@ -145,29 +203,75 @@ const OtpForm: React.FC<{ contactInfo: { email: string; phone: string; }; onSubm
             (element.nextSibling as HTMLInputElement).focus();
         }
     };
-  
+ 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
         if (e.key === "Backspace" && !otp[index] && inputsRef.current[index - 1]) {
             inputsRef.current[index - 1]?.focus();
         }
     };
 
-    const handleFormSubmit = (e: React.FormEvent) => {
+    const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError('');
+        setIsLoading(true);
         const enteredOtp = otp.join('');
-        // For demo purposes, any 6-digit code will work
-        if (enteredOtp.length === 6 && /^\d{6}$/.test(enteredOtp)) {
-            setError('');
-            onSubmit();
-        } else {
-            setError("Please enter a valid 6-digit OTP.");
+        const email = sessionStorage.getItem('tempEmail');
+
+        if (!email) {
+            setError("Session expired. Please start over.");
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/auth/verify-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, otp: enteredOtp })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                localStorage.setItem('token', data.data.token);
+                localStorage.setItem('user', JSON.stringify(data.data.user));
+                sessionStorage.removeItem('tempEmail');
+                onSubmit();
+            } else {
+                setError(data.message || "An unexpected error occurred.");
+            }
+        } catch (err) {
+            setError("Failed to connect to the server. Please try again later.");
+        } finally {
+            setIsLoading(false);
         }
     };
     
-    const handleResend = () => {
-        if (timer === 0) {
-            alert("A new OTP has been sent.");
-            setTimer(30);
+    const handleResend = async () => {
+        if (timer > 0) return;
+        
+        const email = sessionStorage.getItem('tempEmail');
+        if (!email) {
+            setError("Session expired. Please go back and try again.");
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/auth/resend-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                alert('New OTP sent! Check console for testing: ' + data.data.otp_for_testing);
+                setTimer(30);
+                setError('');
+            } else {
+                setError(data.message || "Could not resend OTP.");
+            }
+        } catch (err) {
+            setError("Failed to connect to the server.");
         }
     };
 
@@ -175,16 +279,12 @@ const OtpForm: React.FC<{ contactInfo: { email: string; phone: string; }; onSubm
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 md:p-10 animate-fade-in text-center">
             <h2 className="text-2xl font-bold text-text-primary dark:text-white">Verify Your Account</h2>
             <p className="mt-2 text-text-secondary dark:text-gray-400">
-                Enter the 6-digit code sent to your email ({contactInfo.email}) and phone.
+                Enter the 6-digit code sent to your email ({contactInfo.email}).
             </p>
             <form onSubmit={handleFormSubmit}>
                 <div className="flex justify-center gap-2 md:gap-3 my-8">
                     {otp.map((data, index) => (
-                        <input
-                            key={index}
-                            type="text"
-                            maxLength={1}
-                            value={data}
+                        <input key={index} type="text" maxLength={1} value={data}
                             ref={el => { inputsRef.current[index] = el; }}
                             onChange={e => handleChange(e.target, index)}
                             onKeyDown={e => handleKeyDown(e, index)}
@@ -192,8 +292,10 @@ const OtpForm: React.FC<{ contactInfo: { email: string; phone: string; }; onSubm
                         />
                     ))}
                 </div>
-                 {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
-                <button type="submit" className="w-full py-3 px-4 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors">Verify & Continue</button>
+                {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
+                <button type="submit" disabled={isLoading} className="w-full py-3 px-4 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed">
+                    {isLoading ? 'Verifying...' : 'Verify & Continue'}
+                </button>
             </form>
             <div className="mt-6 text-sm">
                 <p className="text-text-secondary dark:text-gray-400">
@@ -202,16 +304,18 @@ const OtpForm: React.FC<{ contactInfo: { email: string; phone: string; }; onSubm
                         {timer > 0 ? `Resend in ${timer}s` : 'Resend'}
                     </button>
                 </p>
-                <button onClick={onBack} className="mt-2 font-semibold text-primary hover:underline">&larr; Back to Sign Up</button>
+                <button onClick={onBack} className="mt-2 font-semibold text-primary hover:underline">&larr; Back</button>
             </div>
         </div>
     );
 };
 
 
+// UPDATED Main LoginPage Component
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin, theme, setTheme }) => {
     const [authStep, setAuthStep] = useState<'login' | 'signup' | 'otp'>('login');
-    const [signupData, setSignupData] = useState({ name: '', email: '', phone: '' });
+    // This state will hold data for both signup and login flows before OTP verification
+    const [verificationData, setVerificationData] = useState({ name: '', email: '', phone: '' });
 
     const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
     const themeRef = useRef<HTMLDivElement>(null);
@@ -226,21 +330,35 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, theme, setTheme }) => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const handleSignupSubmit = (data: { name: string; email: string; phone: string }) => {
-        setSignupData(data);
+    const handleStartSignup = (data: { name: string; email: string; phone: string }) => {
+        setVerificationData(data);
+        setAuthStep('otp');
+    };
+    
+    const handleStartLoginOtp = (email: string) => {
+        setVerificationData({ name: '', email: email, phone: '' }); // Only email is needed for login OTP step
         setAuthStep('otp');
     };
 
-    const handleOtpSubmit = () => {
-        // Here you would typically verify the OTP on the backend
-        // On success:
-        onLogin(signupData.name);
+    const handleOtpSuccess = () => {
+        // The token and user are already saved in localStorage by the OtpForm.
+        // This function just calls the parent's onLogin to update the app state.
+        onLogin();
+    };
+    
+    const handleGoBackFromOtp = () => {
+        // If coming from signup, verificationData.name will exist.
+        if (verificationData.name) {
+            setAuthStep('signup');
+        } else {
+            setAuthStep('login');
+        }
     };
 
     const handleGoogleSignIn = () => {
         // This would trigger the Google OAuth flow
-        alert('Redirecting to Google Sign-In...');
-        onLogin('Google User');
+        alert('Google Sign-In functionality is not yet connected to a backend.');
+        // onLogin('Google User'); // This would be called in the OAuth callback
     };
 
     return (
@@ -272,12 +390,12 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, theme, setTheme }) => {
             
             <div className="w-full max-w-lg">
                 <div className="text-center mb-8">
-                     <h1 className="text-5xl font-bold text-primary">CorporateSaathi</h1>
-                     <p className="text-text-secondary dark:text-gray-400 mt-4 text-lg">Your Partner in Corporate Compliance & Growth</p>
+                    <h1 className="text-5xl font-bold text-primary">CorporateSaathi</h1>
+                    <p className="text-text-secondary dark:text-gray-400 mt-4 text-lg">Your Partner in Corporate Compliance & Growth</p>
                 </div>
 
                 {authStep === 'otp' ? (
-                    <OtpForm contactInfo={signupData} onSubmit={handleOtpSubmit} onBack={() => setAuthStep('signup')} />
+                    <OtpForm contactInfo={verificationData} onSubmit={handleOtpSuccess} onBack={handleGoBackFromOtp} />
                 ) : (
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
                         <div className="flex">
@@ -297,9 +415,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, theme, setTheme }) => {
 
                         <div className="p-8 md:p-10">
                             {authStep === 'login' ? (
-                                <LoginForm onLogin={() => onLogin()} />
+                                <LoginForm onOtpRequired={handleStartLoginOtp} />
                             ) : (
-                                <SignupForm onSignup={handleSignupSubmit} />
+                                <SignupForm onSignup={handleStartSignup} />
                             )}
 
                             <div className="relative flex py-5 items-center">
